@@ -1,0 +1,9 @@
+G:\AOE_HelpTool\HelpTool\bin\Release\AOE_HelpTool.exe.config
+G:\AOE_HelpTool\HelpTool\bin\Release\AOE_HelpTool.exe
+G:\AOE_HelpTool\HelpTool\bin\Release\AOE_HelpTool.pdb
+G:\AOE_HelpTool\HelpTool\obj\Release\HelpTool.version2_模块小工具.resources
+G:\AOE_HelpTool\HelpTool\obj\Release\HelpTool.Properties.Resources.resources
+G:\AOE_HelpTool\HelpTool\obj\Release\HelpTool.csproj.GenerateResource.cache
+G:\AOE_HelpTool\HelpTool\obj\Release\HelpTool.csproj.CoreCompileInputs.cache
+G:\AOE_HelpTool\HelpTool\obj\Release\AOE_HelpTool.exe
+G:\AOE_HelpTool\HelpTool\obj\Release\AOE_HelpTool.pdb
