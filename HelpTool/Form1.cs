@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -85,9 +84,39 @@ namespace HelpTool
 
                 for (int i = 0; i < tCSs.Length; i++)
                 {
-                    if (File.Exists(mStr_PB_Path + tCSs[i].Trim() + "_pb.lua"))
+                    var tAnnotation = string.Empty;
+                    if (File.Exists(mStr_PB_Path + tCSs[i].Trim() + ".proto"))
                     {
-                        //  sbCSRes.AppendLine(string.Format(mNewCSStr, tCSs[i].Trim()));
+                        Console.WriteLine(mStr_PB_Path + tCSs[i].Trim() + ".proto");
+                        var tStr = File.ReadAllLines(mStr_PB_Path + tCSs[i].Trim() + ".proto");
+                        string str = string.Empty;
+                        //foreach (string item in tStr)
+                        //{
+                        //    if (item.Contains("repeated") || item.Contains("optional"))
+                        //    {
+                        //        var reg = Regex.Replace(item, @"[\s]+", "~");
+                        //        var value = (reg.Split('~')[3]);
+                        //        str = value + ",";
+                        //    }                
+                        //}
+                                          
+                        string item = string.Empty;
+                        for (int tt = 0; tt < tStr.Length; tt++)
+                        {
+                             item = tStr[tt];
+                            if (item.Contains("repeated") || item.Contains("optional"))
+                            {
+                                var reg = Regex.Replace(item, @"[\s]+", "~");
+                                var value = (reg.Split('~')[3]);
+                                str = value + ",";
+                            }
+                            if (item.Contains("message"))
+                            {
+                                tAnnotation = tStr[tt - 1];
+                            }
+                        }
+                        str = str.TrimEnd(',');
+                        Console.WriteLine(str);
                     }
 
                     var tCSParams = tListParams[i];
@@ -99,7 +128,7 @@ namespace HelpTool
                         {
                             sbData3.AppendLine(string.Format(m_CSMethod_FileParams, tCSData3s[j], tCSs[i].Trim()));
                         }
-                        sbCSForMethod.AppendLine(string.Format(m_CSMethod_File, mProtocalName, tCSs[i].Trim(), tCSParams, sbData3.ToString()));
+                        sbCSForMethod.AppendLine(string.Format(m_CSMethod_File, mProtocalName, tCSs[i].Trim(), tCSParams, sbData3.ToString(), tAnnotation));
                     }
                     else
                     {
@@ -118,7 +147,7 @@ namespace HelpTool
                     sbSCInit.AppendLine(string.Format(mSCAddRegister, tSCs[i].Trim()));
                     Console.WriteLine("cwww", mProtocalName, tSCs[i]);
 
-                    if (File.Exists(mStr_PB_Path + tSCs[i].Trim() + "_pb.lua"))
+                    if (File.Exists(mStr_PB_Path + tSCs[i].Trim() + ".proto"))
                     {
                         sbSCMethod.AppendLine(string.Format(mSCMethod_File, mProtocalName, tSCs[i]));
                     }
@@ -134,7 +163,7 @@ namespace HelpTool
             {
                 string str = sbCSRes.ToString() + sbSCInit.ToString();
                 string strMethod = "\r\n----------CS区域----------\r\n" + sbCSForMethod.ToString() + "\r\n----------SC区域----------\r\n" + sbSCMethod.ToString();
-                mGenerate = string.Format(mInstanceStr, mProtocalName, str, strMethod);
+                mGenerate = string.Format(mInstanceStr, mProtocalName, str, strMethod, this.txtModuleName.Text);
             }
         }
         private void btnGenerateLua_Click(object sender, EventArgs e)
@@ -143,18 +172,18 @@ namespace HelpTool
             File.WriteAllText(mLuaPathDir_protocal, mGenerate, new UTF8Encoding(false));
         }
         string mGenerate;
-        string mInstanceStr = "{0} = {0} or BaseClass(ProtocalBase)\r\nfunction {0}:__init()\r\n{1}   {0}.instance = self\r\nend\r\n\r\nfunction {0}:GetInstance()\r\n   if not {0}.instance then\r\n      {0}.New()\r\n   end\r\n   return {0}.instance\r\nend\r\nfunction {0}:Destroy()\r\n   if {0}.instance then\r\n     {0}.instance:DeleteMe()\r\n     {0}.instance = nil\r\n  end\r\nend\r\n{2}\r\n";
-        string mSCAddRegister = "    self:RegisterProtocal(g_MsgID.{0},\"{0}\")--{0}监听 ";
+        string mInstanceStr = "--local {0}=require('{3}.{0}') \r\n local g_MsgID = g_MsgID\r\n local table = table\r\n local {0} = {{}}\r\nfunction {0}:Init()\r\n return {{\r\n {1}   }}\r\nend\r\n{2}\r\n return {0}";
+        string mSCAddRegister = "    [g_MsgID.{0}]=\"{0}\", ";
 
 
-        string mSCMethod_File = "--g_MsgID.{1}\r\n function {0}:{1}(dataType, content)\r\n   local dataLog= require(\"gamenet.protocal.pbc.{1}_pb\").{1}()  dataLog:ParseFromString(content)     loggZSX(\"{1}\",dataLog) \r\n   local data = self:decode_pbc('com.server.game.protobuf.proto.{1}', content) \r\n  --todo\r\n end";
-        string mSCMethod_NotFile = "--g_MsgID.{1}\r\nfunction {0}:{1}(dataType, content)\r\n  loggZSX(\"{1}消息到了\")\r\nend";
+        string mSCMethod_File = "--g_MsgID.{1}\r\n function {0}:{1}(msg)\r\n       loggZSXWarning(\"{1} 消息到了 \"..table.tostring(msg)) \r\nend";
+        string mSCMethod_NotFile = "--g_MsgID.{1}\r\nfunction {0}:{1}(msg)\r\n  loggZSXWarning(\"{1} 消息到了 \"..table.tostring(msg))\r\nend";
 
 
-        string m_CSMethod_File = "--g_MsgID.{1}\r\nlocal {1}_table\r\nfunction {0}:{1}({2})\r\n  if not {1}_table then\r\n     {1}_table={{}}\r\n   end \r\n   {3}  self:Send_pbc(GameNet.Instance:GetLoginNetId(), g_MsgID.{1},'com.server.game.protobuf.proto.{1}',{1}_table)\r\nend";
-        string m_CSMethod_FileParams = "{1}_table.{0}={0}";
+        string m_CSMethod_File = "--g_MsgID.{1}{4}\r\nlocal data{1}\r\nfunction {0}:{1}({2})\r\n  if not data{1} then\r\n     data{1}={{}}\r\n   end \r\n   {3}   self.send(g_MsgID.{1},data{1})\r\n   loggZSXWarning('发送 {1} ', table.tostring(data{1}))\r\nend";
+        string m_CSMethod_FileParams = "data{1}.{0}={0}";
 
-        string m_CSMethod_NotFile = "--g_MsgID.{1}\r\nfunction {0}:{1}()\r\n    self:Send_pbc(GameNet.Instance:GetLoginNetId(),g_MsgID.{1},'com.server.game.protobuf.proto.{1}',{{}})\r\nend";
+        string m_CSMethod_NotFile = "--g_MsgID.{1}\r\n local data{1}={{}} \r\nfunction {0}:{1}()\r\n    --data{1}=赋值\r\n    self.send(g_MsgID.{1},data{1})\r\n    loggZSXWarning('发送 {1} ', table.tostring(data{1}))\r\nend";
 
 
         private void btnGenerateStr_Click(object sender, EventArgs e)
@@ -166,7 +195,7 @@ namespace HelpTool
 
         //-------------------------------页面-------------------------
         #region View          
-        string mViewLua = "local UIView = require('UI.UIView')\r\nlocal {0} = fgui.window_class(UIView)\r\nlocal EventManager = require('Event.EventManager')\r\nfunction {0}:OnShown()\r\n    --EventManager.Register()\r\nend\r\n\r\nfunction {0}:OnHide()\r\n    --EventManager.UnRegister()\r\nend\r\n\r\nfunction {0}:OnLoadFinished()\r\n\r\nend\r\n\r\nfunction {0}:RefreshViewAll()\r\n\r\nend\r\n\r\nfunction {0}:OnNetMessage(moduleID, msgID, data)\r\n\r\nend\r\nreturn {0}\r\n\r\n\r\n\r\n\r\n--local {1} = {{}}\r\n--{1}[UI_CONFIG_CONTEXT_CLASS_NAME] = '{2}.{0}'\r\n--{1}[UI_CONFIG_CONTEXT_PAKAGE_NAME] = '{2}'\r\n--{1}[UI_CONFIG_CONTEXT_PANEL_NAME] = '{0}'\r\n--{1}[UI_CONFIG_CONTEXT_PARET_LAYER] = UI_LAYER_MAIN\r\n--{1}[UI_CONFIG_CONTEXT_SORTING_ORDER] = 1\r\n--{1}[UI_CONFIG_CONTEXT_CACHE_TIME] = 3\r\n--uiConfig.{0} = {1}";
+        string mViewLua = "local UIView = require('UI.UIView')\r\nlocal {0} = fgui.window_class(UIView)\r\nlocal EventManager = require('Event.EventManager')\r\nlocal GameEvent = require('Event.GameEvent')\r\nfunction {0}:OnShown()\r\n   UIView.OnShown(self) \r\n    --event1=EventManager.Register(GameEvent.test, handler(self, self.Test), 9)\r\nend\r\n\r\nfunction {0}:OnHide()\r\n  UIView.OnHide(self)  \r\n --    if event1 then EventManager.UnRegister(event1) event1=nil end\r\nend\r\n\r\nfunction {0}:OnLoadFinished()\r\n  self.uiComs = require('UI.Packages._{1}.UI_{0}'):OnConstruct(self.contentPane)\r\nend\r\n\r\nfunction {0}:RefreshViewAll()\r\nend\r\n\r\nfunction {0}:OnNetMessage(msgID, data)\r\nend\r\nreturn {0}\r\n\r\n--	{0} = {{\r\n--        [CLASS_NAME] = '{1}.{0}',\r\n--        [PAKAGE_NAME] = '{1}',\r\n--        [PANEL_NAME] = '{0}',\r\n--        [PARET_LAYER] = UI_LAYER_MAIN,\r\n--        [SORTING_ORDER] = 1,\r\n--        [CACHE_TIME] = 3,\r\n--        [UI_CONFIG_CONTEXT_MODAL] = true,\r\n--        [UI_TWEEN_TYPE_OPEN] = 1\r\n--   }},\r\n";
         private void btnViewGenStr_Click(object sender, EventArgs e)
         {
             StringBuilder mSbStrView = new StringBuilder();
@@ -175,8 +204,8 @@ namespace HelpTool
                 var tViewStrs = this.txtViews.Text.Trim().Split(';');
                 for (int i = 0; i < tViewStrs.Length; i++)
                 {
-                    var name= tViewStrs[i].First().ToString().ToLower() + tViewStrs[i].Substring(1);
-                    mSbStrView.AppendLine(string.Format(mViewLua, tViewStrs[i].Trim(),name,this.txtModuleName.Text));
+                    var name = tViewStrs[i].First().ToString().ToLower() + tViewStrs[i].Substring(1);
+                    mSbStrView.AppendLine(string.Format(mViewLua, tViewStrs[i].Trim(), this.txtModuleName.Text));
                 }
                 this.rtbTxt.Text = mSbStrView.ToString();
             }
@@ -190,7 +219,7 @@ namespace HelpTool
                 var tViewStrs = this.txtViews.Text.Trim().Split(';');
                 for (int i = 0; i < tViewStrs.Length; i++)
                 {
-                    var tContent = string.Format(mViewLua, tViewStrs[i]);
+                    var tContent = string.Format(mViewLua, tViewStrs[i], this.txtModuleName.Text);
                     File.WriteAllText(string.Format("{0}/{1}.lua", m__PathDir, tViewStrs[i].Trim()), tContent, new UTF8Encoding(false));//utf-bom  utf8
                 }
             }
@@ -199,13 +228,13 @@ namespace HelpTool
 
         //----------------------proxy----------------
         #region Proxy
-        string mStrStart = "local {0} ={{}}\r\nlocal CustomUIConfig = require('UI.View.CustomUIConfig')\r\nlocal UIManager = require('UI.UIManager')\r\n--require('Recruit.ProxyRecruitModule')\r\n\r\n";
-        string mStrLong = "function {0}:OpenView{3}()\r\n  UIManager.OpenWindow(CustomUIConfig.{2})\r\nend\r\nfunction {0}:CloseView{3}()\r\n  UIManager.CloseWindow(CustomUIConfig.{2})\r\nend\r\nfunction {0}:OpenView{3}Data(data)UIManager.OpenWindow(CustomUIConfig.{2},function (code,view)view:SetData(data)end)end\r\n\r\n";
+        string mStrStart = "--  local {0}=require('{1}.{0}')\r\nlocal {0} ={{}}\r\nlocal CustomUIConfig = require('ViewConfig.CustomUIConfig')\r\nlocal UIManager = require('UI.UIManager')\r\n\r\n";
+        string mStrLong = "function {0}:OpenView{3}()\r\n  UIManager.OpenWindow(CustomUIConfig.{2})\r\nend\r\nfunction {0}:CloseView{3}()\r\n  UIManager.CloseWindow(CustomUIConfig.{2},true)\r\nend\r\nfunction {0}:OpenView{3}Data(data)UIManager.OpenWindow(CustomUIConfig.{2},function (code,view)view:SetData(data)end)end\r\n\r\n";
         //local {4} =require(\"game.{1}.{2}\").New()\r\n   {4}:SetData()\r\n   {4}:OpenView()\r\n
         string mEndLong = "return {0}";
         string LoadProxyStrMethod()
         {
-            var startStr = string.Format(mStrStart, mProxyModuleName);
+            var startStr = string.Format(mStrStart, mProxyModuleName, this.txtModuleName.Text);
             var endStr = string.Format(mEndLong, mProxyModuleName);
             StringBuilder forStr = new StringBuilder();
             if (string.IsNullOrEmpty(this.txtViews.Text.Trim()) == false)
@@ -218,7 +247,7 @@ namespace HelpTool
                     forStr.AppendLine(string.Format(mStrLong, mProxyModuleName, this.txtModuleName.Text, tViewStrs[i].Trim(), tMethodName, tSelfName));
                 }
             }
-            return startStr + forStr.ToString()+ endStr;
+            return startStr + forStr.ToString() + endStr;
         }
         private void btnProxyGenStr_Click(object sender, EventArgs e)
         {
@@ -302,16 +331,22 @@ namespace HelpTool
                     for (int i = 0; i < tCSs.Length; i++)
                     {
                         string oneParams = "";
-                        if (File.Exists(mStr_PB_Path + tCSs[i].Trim() + "_pb.lua"))
+                        if (File.Exists(mStr_PB_Path + tCSs[i].Trim() + ".proto"))
                         {
-                            var tAllStr = File.ReadAllText(mStr_PB_Path + tCSs[i].Trim() + "_pb.lua", System.Text.Encoding.UTF8);
-                            var tCountName = tAllStr.Split(new string[] { ".name = \"" }, StringSplitOptions.None);
-                            for (int j = 1; j < tCountName.Length - 1; j++)
+
+                            var tStr = File.ReadAllLines(mStr_PB_Path + tCSs[i].Trim() + ".proto");
+
+                            foreach (string item in tStr)
                             {
-                                var tParams = tCountName[j].Split(new string[] { "\"" }, StringSplitOptions.None)[0];
-                                Console.WriteLine("参数 =" + tParams);
-                                oneParams += tParams + ",";
+                                if (item.Contains("repeated") || item.Contains("optional"))
+                                {
+                                    var reg = Regex.Replace(item, @"[\s]+", "~");
+                                    var value = (reg.Split('~')[3]);
+                                    oneParams += value + ",";
+                                }
                             }
+                            oneParams = oneParams.TrimEnd(',');
+                            Console.WriteLine(oneParams);
                         }
                         else
                         {
@@ -502,6 +537,24 @@ namespace HelpTool
         {
             string v_OpenFolderPath = @"C:\__" + txtModuleName.Text.Trim();
             System.Diagnostics.Process.Start("explorer.exe", v_OpenFolderPath);
+        }
+        string formats = "local {0}Tab = require('Tables.{0}Config')\r\n";
+        private void tabButton_Click(object sender, EventArgs e)
+        {
+            var values = this.tableTxt.Text.Split(';');
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < values.Length; i++)
+            {
+                sb.Append(string.Format(formats, values[i]));
+            }
+            this.rtbTxt.Text = sb.ToString();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var a = "repeated GeneralCardInfo generalCards   = 1;";
+            var t = Regex.Replace(a, @"[\s]+", "~");
+            Console.WriteLine(t);
         }
     }
 }

@@ -18,3 +18,13 @@ G:\AOE_HelpTool\HelpTool\obj\Debug\HelpTool.csproj.GenerateResource.cache
 G:\AOE_HelpTool\HelpTool\obj\Debug\HelpTool.csproj.CoreCompileInputs.cache
 G:\AOE_HelpTool\HelpTool\obj\Debug\AOE_HelpTool.exe
 G:\AOE_HelpTool\HelpTool\obj\Debug\AOE_HelpTool.pdb
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\bin\Debug\AOE_HelpTool.exe.config
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\bin\Debug\AOE_HelpTool.exe
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\obj\Debug\HelpTool.csprojAssemblyReference.cache
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\obj\Debug\HelpTool.version2_模块小工具.resources
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\obj\Debug\HelpTool.Properties.Resources.resources
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\obj\Debug\HelpTool.csproj.GenerateResource.cache
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\obj\Debug\HelpTool.csproj.CoreCompileInputs.cache
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\obj\Debug\AOE_HelpTool.exe
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\obj\Debug\AOE_HelpTool.pdb
+D:\Documents\GitHub\AOE_HelpTool\HelpTool\bin\Debug\AOE_HelpTool.pdb

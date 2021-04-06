@@ -51,6 +51,9 @@
             this.btnSelectLua_CS = new System.Windows.Forms.Button();
             this.testBtn = new System.Windows.Forms.Button();
             this.openFile = new System.Windows.Forms.Button();
+            this.tableTxt = new System.Windows.Forms.TextBox();
+            this.tabButton = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnGenerateStr
@@ -256,7 +259,7 @@
             // 
             // testBtn
             // 
-            this.testBtn.Location = new System.Drawing.Point(366, 780);
+            this.testBtn.Location = new System.Drawing.Point(325, 784);
             this.testBtn.Name = "testBtn";
             this.testBtn.Size = new System.Drawing.Size(52, 51);
             this.testBtn.TabIndex = 21;
@@ -274,11 +277,43 @@
             this.openFile.UseVisualStyleBackColor = true;
             this.openFile.Click += new System.EventHandler(this.openFile_Click);
             // 
+            // tableTxt
+            // 
+            this.tableTxt.Font = new System.Drawing.Font("微软雅黑", 12F);
+            this.tableTxt.Location = new System.Drawing.Point(248, 599);
+            this.tableTxt.Multiline = true;
+            this.tableTxt.Name = "tableTxt";
+            this.tableTxt.Size = new System.Drawing.Size(188, 123);
+            this.tableTxt.TabIndex = 23;
+            // 
+            // tabButton
+            // 
+            this.tabButton.Location = new System.Drawing.Point(343, 728);
+            this.tabButton.Name = "tabButton";
+            this.tabButton.Size = new System.Drawing.Size(93, 33);
+            this.tabButton.TabIndex = 24;
+            this.tabButton.Text = "table字符串";
+            this.tabButton.UseVisualStyleBackColor = true;
+            this.tabButton.Click += new System.EventHandler(this.tabButton_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(384, 786);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(52, 51);
+            this.button1.TabIndex = 25;
+            this.button1.Text = "test";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // version2_模块小工具
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1720, 843);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.tabButton);
+            this.Controls.Add(this.tableTxt);
             this.Controls.Add(this.openFile);
             this.Controls.Add(this.testBtn);
             this.Controls.Add(this.btnSelectLua_CS);
@@ -335,6 +370,9 @@
         private System.Windows.Forms.Button btnSelectLua_CS;
         private System.Windows.Forms.Button testBtn;
         private System.Windows.Forms.Button openFile;
+        private System.Windows.Forms.TextBox tableTxt;
+        private System.Windows.Forms.Button tabButton;
+        private System.Windows.Forms.Button button1;
     }
 }
 
