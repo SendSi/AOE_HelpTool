@@ -90,20 +90,10 @@ namespace HelpTool
                         Console.WriteLine(mStr_PB_Path + tCSs[i].Trim() + ".proto");
                         var tStr = File.ReadAllLines(mStr_PB_Path + tCSs[i].Trim() + ".proto");
                         string str = string.Empty;
-                        //foreach (string item in tStr)
-                        //{
-                        //    if (item.Contains("repeated") || item.Contains("optional"))
-                        //    {
-                        //        var reg = Regex.Replace(item, @"[\s]+", "~");
-                        //        var value = (reg.Split('~')[3]);
-                        //        str = value + ",";
-                        //    }                
-                        //}
-                                          
                         string item = string.Empty;
                         for (int tt = 0; tt < tStr.Length; tt++)
                         {
-                             item = tStr[tt];
+                            item = tStr[tt];
                             if (item.Contains("repeated") || item.Contains("optional"))
                             {
                                 var reg = Regex.Replace(item, @"[\s]+", "~");
@@ -126,13 +116,13 @@ namespace HelpTool
                         StringBuilder sbData3 = new StringBuilder();
                         for (int j = 0; j < tCSData3s.Length; j++)
                         {
-                            sbData3.AppendLine(string.Format(m_CSMethod_FileParams, tCSData3s[j], tCSs[i].Trim()));
+                            sbData3.Append(string.Format(m_CSMethod_FileParams, tCSData3s[j], tCSs[i].Trim()));
                         }
                         sbCSForMethod.AppendLine(string.Format(m_CSMethod_File, mProtocalName, tCSs[i].Trim(), tCSParams, sbData3.ToString(), tAnnotation));
                     }
                     else
                     {
-                        sbCSForMethod.AppendLine(string.Format(m_CSMethod_NotFile, mProtocalName, tCSs[i].Trim()));
+                        sbCSForMethod.AppendLine(string.Format(m_CSMethod_NotFile, mProtocalName, tCSs[i].Trim(), tAnnotation));
                     }
                 }
             }
@@ -145,11 +135,21 @@ namespace HelpTool
                 for (int i = 0; i < tSCs.Length; i++)
                 {
                     sbSCInit.AppendLine(string.Format(mSCAddRegister, tSCs[i].Trim()));
-                    Console.WriteLine("cwww", mProtocalName, tSCs[i]);
+                    //Console.WriteLine("cwww", mProtocalName, tSCs[i]);
 
                     if (File.Exists(mStr_PB_Path + tSCs[i].Trim() + ".proto"))
                     {
-                        sbSCMethod.AppendLine(string.Format(mSCMethod_File, mProtocalName, tSCs[i]));
+                        var tStr = File.ReadAllLines(mStr_PB_Path + tSCs[i].Trim() + ".proto");
+                        string tAnnotation = string.Empty;
+
+                        for (int tt = 0; tt < tStr.Length; tt++)
+                        {
+                            if (tStr[tt].Contains("message"))
+                            {
+                                tAnnotation = tStr[tt - 1];
+                            }
+                        }
+                        sbSCMethod.AppendLine(string.Format(mSCMethod_File, mProtocalName, tSCs[i], tAnnotation,this.txtModuleName.Text));
                     }
                     else
                     {
@@ -157,7 +157,6 @@ namespace HelpTool
                     }
                 }
             }
-
 
             if (string.IsNullOrEmpty(mProtocalName) == false)
             {
@@ -176,14 +175,16 @@ namespace HelpTool
         string mSCAddRegister = "    [g_MsgID.{0}]=\"{0}\", ";
 
 
-        string mSCMethod_File = "--g_MsgID.{1}\r\n function {0}:{1}(msg)\r\n       loggZSXWarning(\"{1} 消息到了 \"..table.tostring(msg)) \r\nend";
+        //string mSCMethod_File = "--g_MsgID.{1}{2}\r\n function {0}:{1}(msg)\r\n       loggZSXWarning(\"{1} 消息到了 \"..table.tostring(msg)) \r\nend";
+        string mSCMethod_File = "--g_MsgID.{1}{2}\r\n function {0}:{1}(msg)\r\n      --{3}Manager:Set{1}(msg) \r\nend";
         string mSCMethod_NotFile = "--g_MsgID.{1}\r\nfunction {0}:{1}(msg)\r\n  loggZSXWarning(\"{1} 消息到了 \"..table.tostring(msg))\r\nend";
 
 
-        string m_CSMethod_File = "--g_MsgID.{1}{4}\r\nlocal data{1}\r\nfunction {0}:{1}({2})\r\n  if not data{1} then\r\n     data{1}={{}}\r\n   end \r\n   {3}   self.send(g_MsgID.{1},data{1})\r\n   loggZSXWarning('发送 {1} ', table.tostring(data{1}))\r\nend";
-        string m_CSMethod_FileParams = "data{1}.{0}={0}";
+        string m_CSMethod_File = "--g_MsgID.{1}{4}\r\nfunction {0}:{1}({2})\r\n  local data={{{3}}}   \r\n  self.send(g_MsgID.{1},data)\r\n end";
+        // string m_CSMethod_File = "--g_MsgID.{1}{4}\r\nfunction {0}:{1}({2})\r\n  local data={{{3}}}   \r\n self.send(g_MsgID.{1},data)\r\n   loggZSXWarning('发送 {1} ', table.tostring(data{1}))\r\nend";
+        string m_CSMethod_FileParams = "{0}={0},";
 
-        string m_CSMethod_NotFile = "--g_MsgID.{1}\r\n local data{1}={{}} \r\nfunction {0}:{1}()\r\n    --data{1}=赋值\r\n    self.send(g_MsgID.{1},data{1})\r\n    loggZSXWarning('发送 {1} ', table.tostring(data{1}))\r\nend";
+        string m_CSMethod_NotFile = "--g_MsgID.{1}{2}\r\nfunction {0}:{1}()\r\n     local data={{}}\r\n    self.send(g_MsgID.{1},data)\r\n end";
 
 
         private void btnGenerateStr_Click(object sender, EventArgs e)
